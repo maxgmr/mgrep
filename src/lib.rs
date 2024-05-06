@@ -8,14 +8,20 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
+    // args can be any type that implements Iterator type and returns String items
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        // Ignore name of program by consuming first element
+        args.next();
 
-        // could be optimised by not using clone
-        let query = args[1].clone();
-        let file_path = args[2].clone();
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("No query string provided"),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("No file path provided"),
+        };
 
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
